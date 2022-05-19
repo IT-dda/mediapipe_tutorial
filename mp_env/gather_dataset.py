@@ -20,7 +20,8 @@ gesture = {
 
 # MediaPipe hands model
 mp_hands = mp.solutions.hands
-mp_drawing = mp.solutions.drawing_utils  # 웹캠 영상에서 손가락의 뼈마디 부분, 연두색으로 표시되는 부분을 그릴 수 있게 도와주는 유틸리티
+# 웹캠 영상에서 손가락의 뼈마디 부분, 연두색으로 표시되는 부분을 그릴 수 있게 도와주는 유틸리티
+mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands(
     max_num_hands=max_num_hands, min_detection_confidence=0.5, min_tracking_confidence=0.5
 )  # 참고: https://google.github.io/mediapipe/solutions/hands#min_detection_confidence
@@ -42,7 +43,8 @@ def click(event, x, y, flags, param):
 
 
 cv2.namedWindow("Dataset")  # 카메라창 생성 및 이름 설정
-cv2.setMouseCallback("Dataset", click)  # 마우스 콜백 함수 설정 : cv2.setMouseCallback(윈도우, 콜백 함수, 사용자 정의 데이터)
+# 마우스 콜백 함수 설정 : cv2.setMouseCallback(윈도우, 콜백 함수, 사용자 정의 데이터)
+cv2.setMouseCallback("Dataset", click)
 
 while cap.isOpened():
     ret, img = cap.read()  # ret(프레임 읽기 성공 여부), img(읽어온 비디오의 한 프레임)
@@ -52,9 +54,8 @@ while cap.isOpened():
     img = cv2.flip(img, 1)  # 좌우대칭(1), 상하대칭(0), 상하좌우대칭(-1)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # BGR > RGB 색상 공간 변환
 
-    result = hands.process(
-        img
-    )  # Processes an RGB image and returns the hand landmarks and handedness of each detected hand.
+    # Processes an RGB image and returns the hand landmarks and handedness of each detected hand.
+    result = hands.process(img)
 
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # RGB > BGR 색상 공간 변환
 
@@ -67,13 +68,19 @@ while cap.isOpened():
                 joint[j] = [lm.x, lm.y, lm.z]
 
             # Compute angles between joints
-            v1 = joint[[0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19], :]  # Parent joint
-            v2 = joint[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], :]  # Child joint
+            v1 = joint[[0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0,
+                        13, 14, 15, 0, 17, 18, 19], :]  # Parent joint
+            v2 = joint[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                        13, 14, 15, 16, 17, 18, 19, 20], :]  # Child joint
             v = v2 - v1  # (20,3)
+
             # Normalize v
+            # v = 벡터 / 벡터 크기 = 1
             v = v / np.linalg.norm(v, axis=1)[:, np.newaxis]
+            # 내적의 값: v1 * v2 * cos(angle) = 1 * 1 * cos(angle) => angle 값을 바로 추출 가능
 
             # Get angle using arcos of dot product
+            # arccos(코싸인 역함수): angle 값을 추출하기 위해 사용하는 것
             angle = np.arccos(
                 np.einsum(
                     "nt,nt->n",
