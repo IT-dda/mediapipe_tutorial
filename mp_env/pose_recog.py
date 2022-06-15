@@ -9,7 +9,7 @@ gesture = {
     6:'six', 7:'rock', 8:'spiderman', 9:'yeah', 10:'ok', 11:'fy'
 }
 
-# MediaPipe hands model
+# MediaPipe Pose model
 mp_drawing = mp.solutions.drawing_utils
 pose = mp_pose.Pose(
     min_detection_confidence=0.5,
